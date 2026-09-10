@@ -28,38 +28,40 @@ mov cl, 0x02
 jmp init
 
 cylinder_loop:
-    cmp ch, 80
-    je cylinder_end
+  cmp ch, 80
+  je cylinder_end
 
-    mov dh, 0x00
-    head_loop:
-        cmp dh, 2
-        je head_end
-        
-        mov cl, 0x01
-        init:
-        sector_loop:
-            cmp cl, 19
-            je sector_end
+  mov dh, 0x00
+  head_loop:
+    cmp dh, 2
+    je head_end
+      
+    mov cl, 0x01
+    init:
+    sector_loop:
+      cmp cl, 19
+      je sector_end
 
-            cmp si, 0
-            je cylinder_end
+      cmp si, 0
+      je cylinder_end
 
-            int 0x13
+      int 0x13
+      mov ah, 0x02
+      mov al, 0x01
 
-            add bx, 512
-            dec si
+      add bx, 512
+      dec si
 
-        inc cl
-        jmp sector_loop
-        sector_end:
+      inc cl
+      jmp sector_loop
+    sector_end:
 
-        inc dh 
-        jmp head_loop
-    head_end:
+    inc dh 
+    jmp head_loop
+  head_end:
 
-    inc ch
-    jmp cylinder_loop
+  inc ch
+  jmp cylinder_loop
 cylinder_end:
 
 
