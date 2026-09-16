@@ -28,7 +28,7 @@ test: build/boot.img
 		-fda build/boot.img \
 		-monitor stdio \
 		-device VGA
-	diff src/load build/load_dumped
+	diff src/load build/load_dumped && echo succes
 
 clean:
 	rm -rf build

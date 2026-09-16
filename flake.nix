@@ -18,7 +18,7 @@
       ];
       
       shellHook = ''
-        base64 /dev/urandom | head -c 20000 > src/load && make test
+        ./test.sh
       '';
     };
   };
