@@ -15,10 +15,12 @@
         gnumake
         nasm
         qemu
+        gcc_multi
+        binutils
       ];
       
       shellHook = ''
-        make test
+        # ./test.sh
       '';
     };
   };
