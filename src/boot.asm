@@ -1,7 +1,5 @@
 [BITS 16]
 
-[ORG 0x0000]
-
 cli
 
 ;STACK SETUP
@@ -17,93 +15,50 @@ mov ds, ax
 mov ax, 0x7E0
 mov es, ax
 
-mov bx, 0     ; start
-mov si, N     ; counter
+mov [boot_drive], dl
 
-mov ch, 0x00  ; cylinder 0
-mov dh, 0x00  ; head 0
-mov cl, 0x02  ; sector 2
-jmp init
+.loop:
+    mov di, 5
+  .retry:
+    mov si, DAP
+    mov ah, 0x42
+    mov dl, [boot_drive]
 
-cylinder_loop:
-  cmp ch, 80
-  je cylinder_end
+    int 0x13
 
-  mov dh, 0x00
-  head_loop:
-    cmp dh, 2
-    je head_end
-      
-    mov cl, 1
-    init:
-    sector_loop:
-      cmp cl, 19
-      je sector_end
+    jnc .succes
+    dec di
+    jnz .retry
+    jmp .error
+  .succes:
 
-      cmp si, 0
-      je cylinder_end
+    inc word [lba_address]
+    add word [buffer_offset], 512
 
-      mov di, 5       ; error counter
-      again:
-        mov ah, 0x02  ; read sector
-        mov al, 0x01  ; read 1 sector
-        int 0x13
-        jnc success
-          dec di
-          jnz fail
-          jmp again
-      success:
+    jnc .no_overflow
+      add word [buffer_segment], 0x1000
+    .no_overflow:
 
-      dec si
-      add bx, 512
-      jnc no_overflow
-        mov ax, es
-        add ax, 0x1000
-        mov es, ax
-      no_overflow:
+    cmp word [lba_address], SECTORS
+    jbe .loop
 
-      inc cl
-      jmp sector_loop
-    sector_end:
-
-    inc dh 
-    jmp head_loop
-  head_end:
-
-  inc ch
-  jmp cylinder_loop
-cylinder_end:
-
-push suc_msg
-call print
-
-end:
-sti
+.error:
 infloop:
   jmp infloop
 
-fail:
-  push err_msg
-  call print
-  jmp end 
-
-print:
-  pop ax
-  pop si 
-  push ax
-  mov ah, 0x0E
-  print_loop:
-    mov al, byte [si]
-    test al, al
-    je print_end
-    inc si
-    int 0x10
-    jmp print_loop
-  print_end:
-  ret
-
-err_msg: db "somthing went wrong", 0x0A, 0x0D, 0
-suc_msg: db "kernel loaded succes", 0x0A, 0x0D, 0
+boot_drive:
+  db 0
+align 4
+DAP:
+  db 0x10
+  db 0
+  dw 1
+buffer_offset:
+  dw 0
+buffer_segment:
+  dw 0x7E0
+lba_address:
+  dq 1
 
 times 510-($-$$) db 0
 dw 0xAA55
