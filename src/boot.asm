@@ -34,7 +34,7 @@ cylinder_loop:
     cmp dh, 2
     je head_end
       
-    mov cl, 0x01
+    mov cl, 1
     init:
     sector_loop:
       cmp cl, 19
@@ -54,8 +54,13 @@ cylinder_loop:
           jmp again
       success:
 
-      add bx, 512
       dec si
+      add bx, 512
+      jnc no_overflow
+        mov ax, es
+        add ax, 0x1000
+        mov es, ax
+      no_overflow:
 
       inc cl
       jmp sector_loop

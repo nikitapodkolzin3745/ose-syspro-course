@@ -18,7 +18,7 @@
       ];
       
       shellHook = ''
-        ./test.sh
+        make test
       '';
     };
   };
