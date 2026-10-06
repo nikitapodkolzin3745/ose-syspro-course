@@ -53,9 +53,11 @@ mov eax, cr0
 or eax, 1
 mov cr0, eax
 
-jmp CODE:next
+jmp dword CODE:next
 [BITS 32]
 next:
+
+cli
 
 mov ax, DATA
 mov ds, ax
@@ -74,6 +76,7 @@ infloop:
 
 boot_drive:
   db 0
+
 align 4
 dap:
   db 0x10
