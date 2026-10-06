@@ -1,7 +1,5 @@
 [BITS 16]
 
-[ORG 0x0000]
-
 cli
 
 ;STACK SETUP
@@ -17,55 +15,50 @@ mov ds, ax
 mov ax, 0x7E0
 mov es, ax
 
-mov ah, 0x02    ; read sector
-mov al, 0x01    ; read 1 sector
-mov bx, 0       ; start
-mov si, N       ; counter
+mov [boot_drive], dl
 
-mov ch, 0x00
-mov dh, 0x00
-mov cl, 0x02
-jmp init
+.loop:
+    mov di, 5
+  .retry:
+    mov si, DAP
+    mov ah, 0x42
+    mov dl, [boot_drive]
 
-cylinder_loop:
-    cmp ch, 80
-    je cylinder_end
+    int 0x13
 
-    mov dh, 0x00
-    head_loop:
-        cmp dh, 2
-        je head_end
-        
-        mov cl, 0x01
-        init:
-        sector_loop:
-            cmp cl, 19
-            je sector_end
+    jnc .succes
+    dec di
+    jnz .retry
+    jmp .error
+  .succes:
 
-            cmp si, 0
-            je cylinder_end
+    inc word [lba_address]
+    add word [buffer_offset], 512
 
-            int 0x13
+    jnc .no_overflow
+      add word [buffer_segment], 0x1000
+    .no_overflow:
 
-            add bx, 512
-            dec si
+    cmp word [lba_address], SECTORS
+    jbe .loop
 
-        inc cl
-        jmp sector_loop
-        sector_end:
-
-        inc dh 
-        jmp head_loop
-    head_end:
-
-    inc ch
-    jmp cylinder_loop
-cylinder_end:
-
-
-sti
+.error:
 infloop:
   jmp infloop
+
+boot_drive:
+  db 0
+align 4
+DAP:
+  db 0x10
+  db 0
+  dw 1
+buffer_offset:
+  dw 0
+buffer_segment:
+  dw 0x7E0
+lba_address:
+  dq 1
 
 times 510-($-$$) db 0
 dw 0xAA55

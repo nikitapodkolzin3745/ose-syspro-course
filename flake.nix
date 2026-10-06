@@ -18,7 +18,7 @@
       ];
       
       shellHook = ''
-        make
+        make test
       '';
     };
   };
