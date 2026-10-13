@@ -1,16 +1,31 @@
-build/kernel.o: src/kernel.c
-	mkdir -p build
-	gcc -std=c99 -m32 -O2 -ffreestanding -no-pie -fno-pie -mno-sse -fno-stack-protector -c src/kernel.c -o build/kernel.o
+.DEFAULT_GOAL := build
 
-build/kernel_probe.bin: build/kernel.o
-	ld -m elf_i386 -Ttext 0x7E00 --unresolved-symbols=ignore-all --entry=0 build/kernel.o -o build/kernel_probe.elf
-	objcopy -O binary build/kernel_probe.elf build/kernel_probe.bin
+KERNEL_C_SOURCES := $(shell find src -type f -name '*.c' | sort)
+KERNEL_ASM_SOURCES := $(shell find src -type f -name '*.asm' ! -path 'src/boot.asm' | sort)
+KERNEL_HEADERS := $(shell find include -type f -name '*.h' | sort)
+KERNEL_OBJECTS := $(patsubst src/%.c,build/%.o,$(KERNEL_C_SOURCES)) \
+	$(patsubst src/%.asm,build/%.o,$(KERNEL_ASM_SOURCES))
+
+build/%.o: src/%.c $(KERNEL_HEADERS)
+	mkdir -p $(@D)
+	gcc -std=c99 -m32 -O2 -ffreestanding -no-pie -fno-pie -mno-sse -fno-stack-protector -Iinclude -c $< -o $@
+
+build/%.o: src/%.asm
+	mkdir -p $(@D)
+	nasm -f elf32 $< -o $@
+
+build/kernel_probe.elf: $(KERNEL_OBJECTS)
+	ld -m elf_i386 -Ttext 0x7E00 --unresolved-symbols=ignore-all --entry=0 $^ -o $@
+
+build/kernel_probe.bin: build/kernel_probe.elf
+	objcopy -O binary $< $@
+	@printf 'Kernel size: %s bytes\n' "$$(stat -c %s $@)"
 
 build/boot.o: src/boot.asm build/kernel_probe.bin
 	nasm -f elf32 -dSECTORS=$$(( ($$(stat -c %s build/kernel_probe.bin) + 511) / 512 )) src/boot.asm -o build/boot.o
 
-build/os.bin: build/kernel.o build/boot.o src/link.ld
-	ld -m elf_i386 build/boot.o build/kernel.o -T src/link.ld -o build/os.elf
+build/os.bin: $(KERNEL_OBJECTS) build/boot.o src/link.ld
+	ld -m elf_i386 build/boot.o $(KERNEL_OBJECTS) -T src/link.ld -o build/os.elf
 	objcopy -I elf32-i386 -O binary build/os.elf build/os.bin
 
 build/disk.img: build/os.bin

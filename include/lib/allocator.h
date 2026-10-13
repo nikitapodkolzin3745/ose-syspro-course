@@ -1,0 +1,1 @@
+void* malloc_immortal(size_t, size_t);

@@ -17,10 +17,11 @@
         qemu
         gcc_multi
         binutils
+        gdb
       ];
       
       shellHook = ''
-        # ./test.sh
+        make run && make clean
       '';
     };
   };

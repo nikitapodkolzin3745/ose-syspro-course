@@ -12,14 +12,14 @@ mov sp, 0x7C00
 xor ax, ax
 mov ds, ax
 
-mov [boot_drive], dl
+; mov [boot_drive], dl
 
 loop:
     mov di, 5
   retry:
     mov si, dap
     mov ah, 0x42
-    mov dl, [boot_drive]
+    ; mov dl, [boot_drive]
 
     int 0x13
 
@@ -67,15 +67,17 @@ mov fs, ax
 mov gs, ax
 
 [EXTERN kernel]
-call CODE:kernel
+call kernel
 
 error:
 [GLOBAL infloop]
 infloop:
   jmp infloop
 
-boot_drive:
-  db 0
+[GLOBAL do_cli]
+do_cli:
+  cli
+  ret
 
 align 4
 dap:
