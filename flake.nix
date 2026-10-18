@@ -21,7 +21,7 @@
       ];
       
       shellHook = ''
-        make run && make clean
+        make run ; make clean
       '';
     };
   };

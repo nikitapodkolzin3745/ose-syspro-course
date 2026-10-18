@@ -5,10 +5,12 @@ KERNEL_ASM_SOURCES := $(shell find src -type f -name '*.asm' ! -path 'src/boot.a
 KERNEL_HEADERS := $(shell find include -type f -name '*.h' | sort)
 KERNEL_OBJECTS := $(patsubst src/%.c,build/%.o,$(KERNEL_C_SOURCES)) \
 	$(patsubst src/%.asm,build/%.o,$(KERNEL_ASM_SOURCES))
+DEBAG ?= 1
+DEBAG_FLAG := $(if $(filter 1,$(DEBAG)),-DDEBAG,)
 
 build/%.o: src/%.c $(KERNEL_HEADERS)
 	mkdir -p $(@D)
-	gcc -std=c99 -m32 -O2 -ffreestanding -no-pie -fno-pie -mno-sse -fno-stack-protector -Iinclude -c $< -o $@
+	gcc -std=c99 -m32 -O2 -ffreestanding -no-pie -fno-pie -mno-sse -fno-stack-protector $(DEBAG_FLAG) -Iinclude -c $< -o $@
 
 build/%.o: src/%.asm
 	mkdir -p $(@D)

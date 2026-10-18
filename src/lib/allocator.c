@@ -6,7 +6,7 @@
 
 #define alignment(x, a) ((void*) (((size_t) x + a - 1) & ~(a - 1)))
 
-void* cursor = arena;
+static void* cursor = arena;
 
 void* malloc_immortal(size_t size, size_t alignment) {
     if (alignment(cursor, alignment) + size > arena_end)

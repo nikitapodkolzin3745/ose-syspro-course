@@ -4,8 +4,6 @@
 #include "lib/assert.h"
 #include "lib/allocator.h"
 
-void infloop();
-
 void kernel() {
     init_printer();
 
@@ -40,4 +38,5 @@ void kernel() {
         previous_end = (size_t) pointer + size;
         allocations++;
     }
+    kernel_panic("Nothing to do...");
 }

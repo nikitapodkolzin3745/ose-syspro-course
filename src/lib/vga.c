@@ -1,23 +1,28 @@
 #include <stddef.h>
 #include "lib/string.h"
 #include <stdarg.h>
-#include "lib/math.h"
 
-size_t cursor_x;
-size_t cursor_y;
+#define VGA_BUFFER 0xB8000
+#define VGA_SIZE 0xFA0
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+#define COLOR_WHITE 0x0F
+
+static size_t cursor_x;
+static size_t cursor_y;
 
 void vga_clear_screen() {
-    memzero((void*) 0xB8000, (size_t) (0xB8FA0 - 0xB8000));
+    memzero((void*) VGA_BUFFER, VGA_SIZE);
 }
 
 void vga_print_char(char c, size_t x, size_t y) {
-    *(char*) (0xB8000 + 2 * (y * 80 + x) + 1) |= 0x0F;
-    *(char*) (0xB8000 + 2 * (y * 80 + x)) = c;
+    *(char*) (VGA_BUFFER + 2 * (y * VGA_WIDTH + x) + 1) |= COLOR_WHITE;
+    *(char*) (VGA_BUFFER + 2 * (y * VGA_WIDTH + x)) = c;
 }
 
 void vga_scroll_down() {
-    memmove((void*) 0xB8000, (void*) 0xB8000 + 160, (size_t) (0xB8FA0 - 0xB8000 - 160));
-    memzero((void*) 0xB8F00, 160);
+    memmove((void*) VGA_BUFFER, (void*) VGA_BUFFER + 2 * VGA_WIDTH, (size_t) (VGA_BUFFER + VGA_SIZE - VGA_BUFFER - 2 * VGA_WIDTH));
+    memzero((void*) (VGA_BUFFER + VGA_SIZE - 2 * VGA_WIDTH), 2 * VGA_WIDTH);
 }
 
 void init_printer() {
@@ -28,11 +33,11 @@ void init_printer() {
 
 void put_char(char c) {
     vga_print_char(c, cursor_x, cursor_y);
-    if (++cursor_x == 80) {
+    if (++cursor_x == VGA_WIDTH) {
         cursor_x = 0;
-        if (++cursor_y == 25) {
+        if (++cursor_y == VGA_HEIGHT) {
             vga_scroll_down();
-            cursor_y = 24;
+            cursor_y = VGA_HEIGHT - 1;
         }
     }
 }
@@ -92,9 +97,9 @@ void vprintf(const char* fmt, va_list args) {
         } else
         if (fmt[i] == '\n') {
             cursor_x = 0;
-            if (++cursor_y == 25) {
+            if (++cursor_y == VGA_HEIGHT) {
                 vga_scroll_down();
-                cursor_y = 24;
+                cursor_y = VGA_HEIGHT - 1;
             }
         } else
         if (fmt[i] == '\r')

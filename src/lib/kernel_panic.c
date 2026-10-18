@@ -6,6 +6,7 @@ void do_cli();
 
 void vkernel_panic(char* fmt, va_list args) {
     do_cli();
+    printf("Kernel panic:\n");
     vprintf(fmt, args);
     infloop();
 }

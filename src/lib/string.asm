@@ -5,7 +5,7 @@ memmove:
   push esi
   push edi 
   mov edi, dword [esp + 12]
-  mov esi, dword [esp + 16]
+  mov esi, dword [esp + 16] ; можно по несколько копировать 
   mov ecx, dword [esp + 20]
   cmp edi, esi
   je .done
@@ -19,11 +19,10 @@ memmove:
   lea esi, [esi + ecx - 1]
   lea edi, [edi + ecx - 1]
   rep movsb
-  cld
 .done:
+  cld
   pop edi 
   pop esi
-  cld
   mov eax, dword [esp + 4]
   ret
 
