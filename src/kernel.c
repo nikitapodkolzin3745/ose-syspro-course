@@ -6,6 +6,7 @@
 
 void kernel() {
     init_printer();
+    vga_set_default_color(COLOR_GREEEN);
 
     const size_t sizes[] = {1, 7, 19, 64, 255, 1024, 4097};
     const size_t alignments[] = {1, 4, 8, 16, 64};

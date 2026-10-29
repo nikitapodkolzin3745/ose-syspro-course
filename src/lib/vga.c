@@ -7,17 +7,28 @@
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 #define COLOR_WHITE 0x0F
+// #define COLOR_GREEEN 0x0A
+// #define COLOR_RED 0x40
 
 static size_t cursor_x;
 static size_t cursor_y;
+static char default_color;
 
 void vga_clear_screen() {
     memzero((void*) VGA_BUFFER, VGA_SIZE);
 }
 
-void vga_print_char(char c, size_t x, size_t y) {
-    *(char*) (VGA_BUFFER + 2 * (y * VGA_WIDTH + x) + 1) |= COLOR_WHITE;
+void vga_set_char(char c, size_t x, size_t y) {
+    *(char*) (VGA_BUFFER + 2 * (y * VGA_WIDTH + x) + 1) |= default_color;
     *(char*) (VGA_BUFFER + 2 * (y * VGA_WIDTH + x)) = c;
+}
+
+void vga_set_color(char color, size_t x, size_t y) {
+    *(char*) (VGA_BUFFER + 2 * (y * VGA_WIDTH + x) + 1) |= color;
+}
+
+void vga_set_default_color(char color) {
+    default_color = color;
 }
 
 void vga_scroll_down() {
@@ -27,12 +38,13 @@ void vga_scroll_down() {
 
 void init_printer() {
     vga_clear_screen();
+    default_color = COLOR_WHITE;
     cursor_x = 0;
     cursor_y = 0;
 }
 
 void put_char(char c) {
-    vga_print_char(c, cursor_x, cursor_y);
+    vga_set_char(c, cursor_x, cursor_y);
     if (++cursor_x == VGA_WIDTH) {
         cursor_x = 0;
         if (++cursor_y == VGA_HEIGHT) {

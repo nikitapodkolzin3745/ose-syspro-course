@@ -6,7 +6,9 @@ void do_cli();
 
 void vkernel_panic(char* fmt, va_list args) {
     do_cli();
+    vga_set_default_color(COLOR_RED);
     printf("Kernel panic:\n");
+    vga_set_default_color(COLOR_WHITE);
     vprintf(fmt, args);
     infloop();
 }
