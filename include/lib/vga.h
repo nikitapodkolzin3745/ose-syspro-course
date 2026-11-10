@@ -13,6 +13,6 @@ void vga_set_color(char, size_t, size_t);
 void vga_set_default_color(char);
 #define COLOR_WHITE 0x0F
 #define COLOR_GREEEN 0x02
-#define COLOR_RED 0x40
+#define BACK_COLOR_RED 0x40
 
 #endif

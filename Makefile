@@ -1,7 +1,8 @@
 .DEFAULT_GOAL := build
 
 KERNEL_C_SOURCES := $(shell find src -type f -name '*.c' | sort)
-KERNEL_ASM_SOURCES := $(shell find src -type f -name '*.asm' ! -path 'src/boot.asm' | sort)
+BOOT_ASM_SOURCE := src/system/boot.asm
+KERNEL_ASM_SOURCES := $(shell find src -type f -name '*.asm' ! -path '$(BOOT_ASM_SOURCE)' | sort)
 KERNEL_HEADERS := $(shell find include -type f -name '*.h' | sort)
 KERNEL_OBJECTS := $(patsubst src/%.c,build/%.o,$(KERNEL_C_SOURCES)) \
 	$(patsubst src/%.asm,build/%.o,$(KERNEL_ASM_SOURCES))
@@ -23,8 +24,8 @@ build/kernel_probe.bin: build/kernel_probe.elf
 	objcopy -O binary $< $@
 	@printf 'Kernel size: %s bytes\n' "$$(stat -c %s $@)"
 
-build/boot.o: src/boot.asm build/kernel_probe.bin
-	nasm -f elf32 -dSECTORS=$$(( ($$(stat -c %s build/kernel_probe.bin) + 511) / 512 )) src/boot.asm -o build/boot.o
+build/boot.o: $(BOOT_ASM_SOURCE) build/kernel_probe.bin
+	nasm -f elf32 -dSECTORS=$$(( ($$(stat -c %s build/kernel_probe.bin) + 511) / 512 )) $(BOOT_ASM_SOURCE) -o build/boot.o
 
 build/os.bin: $(KERNEL_OBJECTS) build/boot.o src/link.ld
 	ld -m elf_i386 build/boot.o $(KERNEL_OBJECTS) -T src/link.ld -o build/os.elf

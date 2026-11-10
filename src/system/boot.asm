@@ -70,6 +70,7 @@ mov gs, ax
 call kernel
 
 error:
+
 [GLOBAL infloop]
 infloop:
   jmp infloop
@@ -78,6 +79,60 @@ infloop:
 do_cli:
   cli
   ret
+
+[GLOBAL do_lidt]
+do_lidt:
+  mov eax, [esp+4]
+  lidt [eax]
+  ret
+
+[GLOBAL collect_context]
+collect_context:
+  cmp dword [esp], 8
+  je .has_error_code
+  cmp dword [esp], 10
+  jb .no_error_code
+  cmp dword [esp], 14
+  jbe .has_error_code
+  cmp dword [esp], 17
+  je .has_error_code
+  cmp dword [esp], 21
+  je .has_error_code
+  cmp dword [esp], 29
+  je .has_error_code
+  cmp dword [esp], 30
+  je .has_error_code
+  
+.no_error_code:
+  push dword 0
+  xchg eax, dword [esp]
+  xchg eax, dword [esp+4]
+  xchg eax, dword [esp]
+.has_error_code:
+
+  push ds
+  push es
+  push fs
+  push gs
+  pusha
+
+  mov ebx, esp
+  
+  and esp, -16
+  sub esp, 12
+
+  push ebx
+
+  cli
+  mov ax, DATA
+  mov ds, ax
+  mov ss, ax
+  mov es, ax 
+  mov fs, ax 
+  mov gs, ax
+
+  [EXTERN universal_handler]
+  call universal_handler
 
 align 4
 dap:
