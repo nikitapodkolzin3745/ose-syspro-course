@@ -48,7 +48,7 @@ _Static_assert(sizeof(pseudo_descriptor) == 6, "pseudo_descriptor must be 6 byte
 typedef struct {
     u32 edi, esi, ebp, esp, ebx, edx, ecx, eax;
     u32 gs, fs, es, ds;
-    u32 error_code, vector; 
+    u32 vector, error_code; 
     u32 eip, cs, eflags;
 } context;
 
