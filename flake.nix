@@ -18,6 +18,7 @@
         gcc_multi
         binutils
         gdb
+        php
       ];
       
       shellHook = ''

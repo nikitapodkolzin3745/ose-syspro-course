@@ -12,7 +12,7 @@ typedef struct {
   u8  DPL          :  2;
   u8  P            :  1;
   u8  limit_16_19  :  4;
-  u8  available_52 :  1;
+  u8  available_52 :  1; 
   u8  L            :  1;
   u8  D_B          :  1;
   u8  G            :  1;
@@ -58,7 +58,9 @@ void do_lidt(pseudo_descriptor*);
 void init_interrupts() {
     interrupt_descriptor *IDT = malloc_immortal(256 * sizeof(interrupt_descriptor), 8);
 
+
     for (size_t i = 0; i < 256; i++) {
+        
         char *trampoline = malloc_immortal(10, 1);
 
         // push imm32
@@ -70,6 +72,43 @@ void init_interrupts() {
         // 0xE9 xx xx xx xx
         trampoline[5] = 0xE9;
         *(u32*)(trampoline + 6) = (u32)collect_context - (u32)(trampoline + 10);
+
+        // char *trampoline;
+        // if (
+        //     i == 8                  ||
+        //     (10 <= i && i <= 14)    ||
+        //     i == 17                 ||
+        //     i == 21                 ||
+        //     i == 29                 ||
+        //     i == 30
+        // ) {
+        //     trampoline = malloc_immortal(10, 1);
+        //     // push imm32
+        //     // 0x68 xx xx xx xx
+        //     trampoline[0] = 0x68;
+        //     *(u32*)(trampoline + 1) = (u32) i;
+
+        //     // jmp rel32
+        //     // 0xE9 xx xx xx xx
+        //     trampoline[5] = 0xE9;
+        //     *(u32*)(trampoline + 6) = (u32)collect_context - (u32)(trampoline + 10);
+        // } else {
+        //     trampoline = malloc_immortal(15, 1);
+        //     // push 0
+        //     // 0x68 00 00 00 00
+        //     trampoline[0] = 0x68;
+        //     *(u32*)(trampoline + 1) = (u32) 0;
+
+        //     // push imm32
+        //     // 0x68 xx xx xx xx
+        //     trampoline[5] = 0x68;
+        //     *(u32*)(trampoline + 6) = (u32) i;
+
+        //     // jmp rel32
+        //     // 0xE9 xx xx xx xx
+        //     trampoline[10] = 0xE9;
+        //     *(u32*)(trampoline + 11) = (u32)collect_context - (u32)(trampoline + 15);
+        // }
 
         IDT[i].offset_0_15 = (u16)((u32)trampoline);
         IDT[i].segment_selector = 0x08;
